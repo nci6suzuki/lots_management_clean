@@ -186,3 +186,55 @@ export async function transferStockFIFO(input: {
   return res;
 }
 
+
+export async function lendUniformFIFO(input: {
+  person_id: string;
+  item_variant_id: string;
+  qty: number;
+  from_branch_id: string;
+  lent_at: string;
+  note?: string;
+}) {
+  const schema = z.object({
+    person_id: z.string().uuid(),
+    item_variant_id: z.string().uuid(),
+    qty: z.number().int().positive(),
+    from_branch_id: z.string().uuid(),
+    lent_at: z.string().min(8),
+    note: z.string().optional(),
+  });
+  const data = schema.parse(input);
+  const { data: res, error } = await supabaseServer.rpc("lend_uniform_fifo", {
+    p_person_id: data.person_id,
+    p_item_variant_id: data.item_variant_id,
+    p_qty: data.qty,
+    p_from_branch_id: data.from_branch_id,
+    p_lent_at: data.lent_at,
+    p_note: data.note ?? null,
+  });
+  if (error) throw new Error(error.message);
+  return res;
+}
+
+export async function returnUniform(input: {
+  lending_id: string;
+  branch_id: string;
+  returned_at: string;
+  note?: string;
+}) {
+  const schema = z.object({
+    lending_id: z.string().uuid(),
+    branch_id: z.string().uuid(),
+    returned_at: z.string().min(8),
+    note: z.string().optional(),
+  });
+  const data = schema.parse(input);
+  const { data: res, error } = await supabaseServer.rpc("return_uniform", {
+    p_lending_id: data.lending_id,
+    p_branch_id: data.branch_id,
+    p_returned_at: data.returned_at,
+    p_note: data.note ?? null,
+  });
+  if (error) throw new Error(error.message);
+  return res;
+}
