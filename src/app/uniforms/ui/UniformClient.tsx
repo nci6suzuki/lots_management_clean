@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { lendUniformFIFO, returnUniform } from "@/app/actions/inventory";
 
 type Branch = { id: string; name: string };
@@ -22,6 +23,7 @@ export default function UniformClient(props: { branches: Branch[]; people: Perso
   return (
     <div className="grid">
       <h3>貸与登録</h3>
+      <div style={{ color: "#666", fontSize: 12 }}>貸与先の追加は <Link href="/master/people">貸与先マスタ</Link> から行えます。</div>
       <div className="form-grid">
         <label>拠点<select value={branchId} onChange={(e) => setBranchId(e.target.value)}>{props.branches.map((b) => <option key={b.id} value={b.id}>{b.name}</option>)}</select></label>
         <label>貸与先<select value={personId} onChange={(e) => setPersonId(e.target.value)}>{props.people.map((p) => <option key={p.id} value={p.id}>{p.name}</option>)}</select></label>

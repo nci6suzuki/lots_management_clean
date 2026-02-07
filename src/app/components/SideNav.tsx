@@ -20,6 +20,7 @@ const groups = [
     ["/master/categories", "カテゴリマスタ"],
     ["/master/variants", "サイズ管理"],
     ["/master/branches", "拠点マスタ"],
+    ["/master/people", "貸与先マスタ"],
   ]},
 ] as const;
 

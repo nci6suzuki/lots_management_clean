@@ -43,6 +43,29 @@ export async function createItem(input: {
   return item;
 }
 
+export async function createPerson(input: {
+  code: string;
+  name: string;
+}) {
+  const schema = z.object({
+    code: z.string().min(1),
+    name: z.string().min(1),
+  });
+  const data = schema.parse(input);
+
+  const { data: person, error } = await supabaseServer
+    .from("people")
+    .insert({
+      code: data.code,
+      name: data.name,
+    })
+    .select("*")
+    .single();
+
+  if (error) throw new Error(error.message);
+  return person;
+}
+
 export async function createCategory(input: {
   name: string;
 }) {
