@@ -43,6 +43,26 @@ export async function createItem(input: {
   return item;
 }
 
+export async function createBranch(input: {
+  name: string;
+}) {
+  const schema = z.object({
+    name: z.string().min(1),
+  });
+  const data = schema.parse(input);
+
+  const { data: branch, error } = await supabaseServer
+    .from("branches")
+    .insert({
+      name: data.name,
+    })
+    .select("*")
+    .single();
+
+  if (error) throw new Error(error.message);
+  return branch;
+}
+
 export async function createVariant(input: {
   item_id: string;
   size?: string | null;

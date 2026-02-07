@@ -18,6 +18,7 @@ const groups = [
   { title: "マスタ", items: [
     ["/master/items", "品目マスタ"],
     ["/master/variants", "サイズ管理"],
+    ["/master/branches", "拠点マスタ"],
   ]},
 ] as const;
 

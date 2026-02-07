@@ -15,6 +15,7 @@ export default function ItemCreateForm({ categories }: { categories: Category[] 
   return (
     <div className="form-grid">
       <h3>新規登録</h3>
+      <div style={{ color: "#666", fontSize: 12 }}>物品コードは入力不要です。登録時に自動採番されます。</div>
       <label>種別<select value={kind} onChange={(e) => setKind(e.target.value as "備" | "名" | "制")}><option value="備">備品</option><option value="名">名入れ品</option><option value="制">制服</option></select></label>
       <label>名称<input value={name} onChange={(e) => setName(e.target.value)} /></label>
       <label>カテゴリ<select value={categoryId} onChange={(e) => setCategoryId(e.target.value)}><option value="">未指定</option>{categories.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}</select></label>
