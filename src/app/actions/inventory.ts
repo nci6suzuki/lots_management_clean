@@ -43,6 +43,26 @@ export async function createItem(input: {
   return item;
 }
 
+export async function createCategory(input: {
+  name: string;
+}) {
+  const schema = z.object({
+    name: z.string().min(1),
+  });
+  const data = schema.parse(input);
+
+  const { data: category, error } = await supabaseServer
+    .from("categories")
+    .insert({
+      name: data.name,
+    })
+    .select("*")
+    .single();
+
+  if (error) throw new Error(error.message);
+  return category;
+}
+
 export async function createBranch(input: {
   code: string;
   name: string;
