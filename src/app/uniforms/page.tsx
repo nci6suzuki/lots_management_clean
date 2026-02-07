@@ -1,7 +1,9 @@
 import { supabaseServer } from "@/lib/supabase/server";
 import UniformClient from "./ui/UniformClient";
+import { requireUser } from "@/lib/auth";
 
 export default async function Page() {
+  await requireUser();
   const [{ data: branches }, { data: people }, { data: variants }, { data: lendings }, { data: histories }] = await Promise.all([
     supabaseServer.from("branches").select("id,name").order("name"),
     supabaseServer.from("people").select("id,name").order("name"),

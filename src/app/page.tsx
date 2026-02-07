@@ -1,7 +1,9 @@
 import Link from "next/link";
 import { supabaseServer } from "@/lib/supabase/server";
+import { requireUser } from "@/lib/auth";
 
 export default async function Home() {
+  await requireUser();
   const now = new Date();
   const month = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
 

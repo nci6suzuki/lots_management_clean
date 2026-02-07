@@ -1,7 +1,9 @@
 import { supabaseServer } from "@/lib/supabase/server";
 import ItemCreateForm from "./ui/ItemCreateForm";
+import { requireUser } from "@/lib/auth";
 
 export default async function Page() {
+  await requireUser();
   const [{ data: categories }, { data: items }] = await Promise.all([
     supabaseServer.from("categories").select("id,name").order("name"),
     supabaseServer.from("items").select("id,item_code,name,kind,is_uniform,created_at").order("created_at", { ascending: false }),

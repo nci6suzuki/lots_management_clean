@@ -1,7 +1,9 @@
 import { supabaseServer } from "@/lib/supabase/server";
 import PersonCreateForm from "./ui/PersonCreateForm";
+import { requireUser } from "@/lib/auth";
 
 export default async function PeoplePage() {
+  await requireUser();
   const { data: people } = await supabaseServer
     .from("people")
     .select("id,code,name")

@@ -1,6 +1,8 @@
 import { supabaseServer } from "@/lib/supabase/server";
+import { requireUser } from "@/lib/auth";
 
 export default async function StocksPage() {
+  await requireUser();
   const { data, error } = await supabaseServer
     .from("purchase_lots")
     .select("branch_id, item_variant_id, qty_remaining, unit_cost, branches(name), item_variants(size, items(item_code,name))");

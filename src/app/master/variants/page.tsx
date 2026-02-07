@@ -1,7 +1,9 @@
 import { supabaseServer } from "@/lib/supabase/server";
 import VariantCreateForm from "./ui/VariantCreateForm";
+import { requireUser } from "@/lib/auth";
 
 export default async function VariantsPage() {
+  await requireUser();
   const [{ data: items }, { data: variants }] = await Promise.all([
     supabaseServer.from("items").select("id,item_code,name").order("item_code"),
     supabaseServer.from("item_variants").select("id,size,sku,is_active,items(item_code,name)").order("created_at", { ascending: false }),

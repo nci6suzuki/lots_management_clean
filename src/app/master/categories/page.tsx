@@ -1,7 +1,9 @@
 import { supabaseServer } from "@/lib/supabase/server";
 import CategoryCreateForm from "./ui/CategoryCreateForm";
+import { requireUser } from "@/lib/auth";
 
 export default async function CategoriesPage() {
+  await requireUser();
   const { data: categories } = await supabaseServer
     .from("categories")
     .select("id,name")

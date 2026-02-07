@@ -1,7 +1,9 @@
 import { supabaseServer } from "@/lib/supabase/server";
 import TransferForm from "./ui/TransferForm";
+import { requireUser } from "@/lib/auth";
 
 export default async function Page() {
+  await requireUser();
   const [{ data: branches }, { data: variants }] = await Promise.all([
     supabaseServer.from("branches").select("id,name").order("name"),
     supabaseServer.from("item_variants").select("id,size,items(id,item_code,name)").eq("is_active", true),

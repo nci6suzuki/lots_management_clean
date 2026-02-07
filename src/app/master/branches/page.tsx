@@ -1,7 +1,9 @@
 import { supabaseServer } from "@/lib/supabase/server";
 import BranchCreateForm from "./ui/BranchCreateForm";
+import { requireUser } from "@/lib/auth";
 
 export default async function BranchesPage() {
+  await requireUser();
   const { data: branches } = await supabaseServer
     .from("branches")
     .select("id,code,name")
