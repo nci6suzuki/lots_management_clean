@@ -2,6 +2,7 @@
 
 import { z } from "zod";
 import { supabaseServer } from "@/lib/supabase/server";
+import { requireUser } from "@/lib/auth";
 
 const MonthSchema = z.string().regex(/^\d{4}-\d{2}$/, "YYYY-MM 形式で指定してください");
 
@@ -11,6 +12,7 @@ export async function createItem(input: {
   category_id?: string | null;
   is_uniform: boolean;
 }) {
+  await requireUser();
   const schema = z.object({
     kind: z.enum(["備", "名", "制"]),
     name: z.string().min(1),
@@ -47,6 +49,7 @@ export async function createPerson(input: {
   code: string;
   name: string;
 }) {
+  await requireUser();
   const schema = z.object({
     code: z.string().min(1),
     name: z.string().min(1),
@@ -69,6 +72,7 @@ export async function createPerson(input: {
 export async function createCategory(input: {
   name: string;
 }) {
+  await requireUser();
   const schema = z.object({
     name: z.string().min(1),
   });
@@ -90,6 +94,7 @@ export async function createBranch(input: {
   code: string;
   name: string;
 }) {
+  await requireUser();
   const schema = z.object({
     code: z.string().min(1),
     name: z.string().min(1),
@@ -114,6 +119,7 @@ export async function createVariant(input: {
   size?: string | null;
   sku?: string | null;
 }) {
+  await requireUser();
   const schema = z.object({
     item_id: z.string().uuid(),
     size: z.string().optional().nullable(),
@@ -143,6 +149,7 @@ export async function receiveStock(input: {
   unit_cost?: number; // purchase の時だけ使う
   note?: string;
 }) {
+  await requireUser();
   const schema = z.object({
     type: z.enum(["purchase", "return", "adjust"]),
     item_variant_id: z.string().uuid(),
@@ -175,6 +182,7 @@ export async function issueStockFIFO(input: {
   to_branch_id?: string | null;
   note?: string;
 }) {
+  await requireUser();
   const schema = z.object({
     type: z.enum(["lend", "transfer", "adjust"]),
     item_variant_id: z.string().uuid(),
@@ -200,6 +208,7 @@ export async function issueStockFIFO(input: {
 }
 
 export async function calcMonthly(month: string) {
+  await requireUser();
   MonthSchema.parse(month);
 
   const { data, error } = await supabaseServer.rpc("calc_monthly_transfer", {
@@ -210,13 +219,13 @@ export async function calcMonthly(month: string) {
   return data ?? [];
 }
 
-export async function closeMonth(input: { month: string; user_id: string }) {
+export async function closeMonth(input: { month: string }) {
+  const user = await requireUser();
   MonthSchema.parse(input.month);
-  z.string().uuid().parse(input.user_id);
 
   const { error } = await supabaseServer.rpc("close_month", {
     p_month: input.month,
-    p_user_id: input.user_id,
+    p_user_id: user.id,
   });
 
   if (error) throw new Error(error.message);
@@ -230,6 +239,7 @@ export async function transferStockFIFO(input: {
   to_branch_id: string;
   note?: string;
 }) {
+  await requireUser();
   const schema = z.object({
     item_variant_id: z.string().uuid(),
     qty: z.number().int().positive(),
@@ -261,6 +271,7 @@ export async function lendUniformFIFO(input: {
   lent_at: string;
   note?: string;
 }) {
+  await requireUser(); 
   const schema = z.object({
     person_id: z.string().uuid(),
     item_variant_id: z.string().uuid(),
@@ -288,6 +299,7 @@ export async function returnUniform(input: {
   returned_at: string;
   note?: string;
 }) {
+  await requireUser();
   const schema = z.object({
     lending_id: z.string().uuid(),
     branch_id: z.string().uuid(),

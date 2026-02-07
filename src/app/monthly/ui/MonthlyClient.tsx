@@ -11,7 +11,6 @@ export default function MonthlyClient() {
   const [month, setMonth] = useState(defaultMonth());
   const [rows, setRows] = useState<Row[]>([]);
   const [msg, setMsg] = useState("");
-  const [userId, setUserId] = useState("");
   const total = useMemo(() => rows.reduce((s, r) => s + Number(r.amount || 0), 0), [rows]);
 
   const exportCsv = () => {
@@ -33,8 +32,7 @@ export default function MonthlyClient() {
       </div>
 
       <div className="row">
-        <label>締め実行ユーザーID<input value={userId} onChange={(e) => setUserId(e.target.value)} style={{ marginLeft: 6, width: 320 }} /></label>
-        <button onClick={async () => { setMsg(""); try { await closeMonth({ month, user_id: userId }); setMsg("月次締め完了（編集ロック）"); } catch (e: any) { setMsg(`エラー: ${e.message}`); } }}>締める</button>
+        <button onClick={async () => { setMsg(""); try { await closeMonth({ month }); setMsg("月次締め完了（編集ロック）"); } catch (e: any) { setMsg(`エラー: ${e.message}`); } }}>締める</button>
       </div>
 
       <div className="muted">合計金額: ¥{total.toLocaleString()}</div>
