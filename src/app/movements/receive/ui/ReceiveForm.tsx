@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { receiveStock } from "@/app/actions/inventory";
+import SearchableVariantSelect from "@/app/components/SearchableVariantSelect";
 
 type Branch = { id: string; name: string };
 type Variant = {
@@ -19,7 +20,7 @@ export default function ReceiveForm({ branches, variants }: { branches: Branch[]
   const [note, setNote] = useState("");
   const [msg, setMsg] = useState("");
 
-  const selectedVariant = useMemo(() => variants.find(v => v.id === variantId), [variants, variantId]);
+  const selectedVariant = useMemo(() => variants.find((v) => v.id === variantId), [variants, variantId]);
 
   return (
     <div style={{ border: "1px solid #ddd", borderRadius: 8, padding: 12, maxWidth: 720 }}>
@@ -37,25 +38,26 @@ export default function ReceiveForm({ branches, variants }: { branches: Branch[]
           拠点
           <select value={branchId} onChange={(e) => setBranchId(e.target.value)}>
             {branches.map((b) => (
-              <option key={b.id} value={b.id}>{b.name}</option>
-            ))}
-          </select>
-        </label>
-
-        <label>
-          物品（サイズ含む）
-          <select value={variantId} onChange={(e) => setVariantId(e.target.value)}>
-            {variants.map((v) => (
-              <option key={v.id} value={v.id}>
-                {v.items.item_code} {v.items.name}{v.size ? ` / ${v.size}` : ""}
+              <option key={b.id} value={b.id}>
+                {b.name}
               </option>
             ))}
           </select>
         </label>
 
         <label>
+          物品（サイズ含む）
+          <SearchableVariantSelect variants={variants} value={variantId} onChange={setVariantId} />
+        </label>
+
+        <label>
           数量
-          <input type="number" value={qty} min={1} onChange={(e) => setQty(parseInt(e.target.value || "1", 10))} />
+          <input
+            type="number"
+            value={qty}
+            min={1}
+            onChange={(e) => setQty(Math.max(1, parseInt(e.target.value || "1", 10)))}
+          />
         </label>
 
         <label>
@@ -65,7 +67,7 @@ export default function ReceiveForm({ branches, variants }: { branches: Branch[]
             value={type === "purchase" ? unitCost : 0}
             min={0}
             disabled={type !== "purchase"}
-            onChange={(e) => setUnitCost(parseFloat(e.target.value || "0"))}
+            onChange={(e) => setUnitCost(Math.max(0, parseFloat(e.target.value || "0")))}
           />
         </label>
 
@@ -75,6 +77,7 @@ export default function ReceiveForm({ branches, variants }: { branches: Branch[]
         </label>
 
         <button
+          disabled={!variantId || !branchId}
           onClick={async () => {
             setMsg("");
             try {

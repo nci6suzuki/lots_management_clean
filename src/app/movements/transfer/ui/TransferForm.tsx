@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { transferStockFIFO } from "@/app/actions/inventory";
+import SearchableVariantSelect from "@/app/components/SearchableVariantSelect";
 
 type Branch = { id: string; name: string };
 type Variant = {
@@ -18,6 +19,8 @@ export default function TransferForm({ branches, variants }: { branches: Branch[
   const [note, setNote] = useState("");
   const [msg, setMsg] = useState("");
 
+  const hasBranchError = fromBranchId === toBranchId;
+
   return (
     <div style={{ border: "1px solid #ddd", borderRadius: 8, padding: 12, maxWidth: 720 }}>
       <div style={{ display: "grid", gap: 8 }}>
@@ -25,7 +28,9 @@ export default function TransferForm({ branches, variants }: { branches: Branch[
           出庫元（from）
           <select value={fromBranchId} onChange={(e) => setFromBranchId(e.target.value)}>
             {branches.map((b) => (
-              <option key={b.id} value={b.id}>{b.name}</option>
+              <option key={b.id} value={b.id}>
+                {b.name}
+              </option>
             ))}
           </select>
         </label>
@@ -34,25 +39,30 @@ export default function TransferForm({ branches, variants }: { branches: Branch[
           振替先（to）
           <select value={toBranchId} onChange={(e) => setToBranchId(e.target.value)}>
             {branches.map((b) => (
-              <option key={b.id} value={b.id}>{b.name}</option>
-            ))}
-          </select>
-        </label>
-
-        <label>
-          物品（サイズ含む）
-          <select value={variantId} onChange={(e) => setVariantId(e.target.value)}>
-            {variants.map((v) => (
-              <option key={v.id} value={v.id}>
-                {v.items.item_code} {v.items.name}{v.size ? ` / ${v.size}` : ""}
+              <option key={b.id} value={b.id}>
+                {b.name}
               </option>
             ))}
           </select>
         </label>
 
+        {hasBranchError && (
+          <div style={{ color: "crimson", fontSize: 13 }}>同じ拠点は選択できません。出庫元と振替先を変更してください。</div>
+        )}
+
+        <label>
+          物品（サイズ含む）
+          <SearchableVariantSelect variants={variants} value={variantId} onChange={setVariantId} />
+        </label>
+
         <label>
           数量
-          <input type="number" min={1} value={qty} onChange={(e) => setQty(parseInt(e.target.value || "1", 10))} />
+          <input
+            type="number"
+            min={1}
+            value={qty}
+            onChange={(e) => setQty(Math.max(1, parseInt(e.target.value || "1", 10)))}
+          />
         </label>
 
         <label>
@@ -61,6 +71,7 @@ export default function TransferForm({ branches, variants }: { branches: Branch[
         </label>
 
         <button
+          disabled={!variantId || !fromBranchId || !toBranchId || hasBranchError}
           onClick={async () => {
             setMsg("");
             try {
