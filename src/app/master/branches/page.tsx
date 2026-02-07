@@ -4,7 +4,7 @@ import BranchCreateForm from "./ui/BranchCreateForm";
 export default async function BranchesPage() {
   const { data: branches } = await supabaseServer
     .from("branches")
-    .select("id,name")
+    .select("id,code,name")
     .order("name");
 
   return (
@@ -18,12 +18,14 @@ export default async function BranchesPage() {
         <table>
           <thead>
             <tr>
+              <th>拠点コード</th>
               <th>拠点名</th>
             </tr>
           </thead>
           <tbody>
             {(branches ?? []).map((b) => (
               <tr key={b.id}>
+                <td>{b.code}</td>
                 <td>{b.name}</td>
               </tr>
             ))}

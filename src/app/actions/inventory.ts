@@ -44,9 +44,11 @@ export async function createItem(input: {
 }
 
 export async function createBranch(input: {
+  code: string;
   name: string;
 }) {
   const schema = z.object({
+    code: z.string().min(1),
     name: z.string().min(1),
   });
   const data = schema.parse(input);
@@ -54,6 +56,7 @@ export async function createBranch(input: {
   const { data: branch, error } = await supabaseServer
     .from("branches")
     .insert({
+      code: data.code,
       name: data.name,
     })
     .select("*")
