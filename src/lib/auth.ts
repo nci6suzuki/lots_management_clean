@@ -11,21 +11,40 @@ export type CurrentUser = {
 };
 
 export const ACCESS_TOKEN_COOKIE = "lm_access_token";
+export const REFRESH_TOKEN_COOKIE = "lm_refresh_token";
 
 export async function getAccessToken() {
   const store = await cookies();
   return store.get(ACCESS_TOKEN_COOKIE)?.value ?? null;
 }
 
+export async function getRefreshToken() {
+  const store = await cookies();
+  return store.get(REFRESH_TOKEN_COOKIE)?.value ?? null;
+}
+
 export async function getCurrentUser(): Promise<CurrentUser | null> {
   try {
     const accessToken = await getAccessToken();
-    if (!accessToken) return null;
+    const refreshToken = await getRefreshToken();
+
+    if (!accessToken && !refreshToken) return null;
+
+    if (accessToken && refreshToken) {
+      const { error: setSessionError } = await supabaseServer.auth.setSession({
+        access_token: accessToken,
+        refresh_token: refreshToken,
+      });
+
+      if (setSessionError) {
+        console.error("getCurrentUser setSession error:", setSessionError.message);
+      }
+    }
 
     const {
       data: { user },
       error: userError,
-    } = await supabaseServer.auth.getUser(accessToken);
+    } = await supabaseServer.auth.getUser();
 
     if (userError || !user?.id || !user.email) {
       return null;

@@ -3,7 +3,12 @@
 import { cookies, headers } from "next/headers";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
-import { ACCESS_TOKEN_COOKIE, requireAdmin, requireUser } from "@/lib/auth";
+import {
+  ACCESS_TOKEN_COOKIE,
+  REFRESH_TOKEN_COOKIE,
+  requireAdmin,
+  requireUser,
+} from "@/lib/auth";
 import { supabaseAdmin, supabaseServer } from "@/lib/supabase/server";
 
 const LoginSchema = z.object({
@@ -23,6 +28,10 @@ export async function login(input: { email: string; password: string }) {
     throw new Error(error?.message ?? "ログインに失敗しました");
   }
 
+  if (!sessionData.session.refresh_token) {
+    throw new Error("セッション情報の取得に失敗しました");
+  }
+
   const store = await cookies();
   const requestHeaders = await headers();
   const forwardedProto = requestHeaders.get("x-forwarded-proto")?.split(",")[0]?.trim();
@@ -32,10 +41,18 @@ export async function login(input: { email: string; password: string }) {
 
   store.set(ACCESS_TOKEN_COOKIE, sessionData.session.access_token, {
     httpOnly: true,
-    secure,
+    secure: process.env.NODE_ENV === "production" ? true : secure,
     sameSite: "lax",
     path: "/",
     maxAge: sessionData.session.expires_in,
+  });
+
+  store.set(REFRESH_TOKEN_COOKIE, sessionData.session.refresh_token, {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production" ? true : secure,
+    sameSite: "lax",
+    path: "/",
+    maxAge: 60 * 60 * 24 * 30,
   });
 
   return { ok: true };
@@ -44,6 +61,7 @@ export async function login(input: { email: string; password: string }) {
 export async function logout() {
   const store = await cookies();
   store.delete(ACCESS_TOKEN_COOKIE);
+  store.delete(REFRESH_TOKEN_COOKIE);
   return { ok: true };
 }
 
