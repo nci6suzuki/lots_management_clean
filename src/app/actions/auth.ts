@@ -4,7 +4,7 @@ import { cookies, headers } from "next/headers";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { ACCESS_TOKEN_COOKIE, requireAdmin, requireUser } from "@/lib/auth";
-import { supabaseServer } from "@/lib/supabase/server";
+import { supabaseAdmin, supabaseServer } from "@/lib/supabase/server";
 
 const LoginSchema = z.object({
   email: z.string().email("メールアドレス形式で入力してください"),
@@ -14,7 +14,11 @@ const LoginSchema = z.object({
 export async function login(input: { email: string; password: string }) {
   const data = LoginSchema.parse(input);
 
-  const { data: sessionData, error } = await supabaseServer.auth.signInWithPassword(data);
+  const { data: sessionData, error } = await supabaseServer.auth.signInWithPassword({
+    email: data.email,
+    password: data.password,
+  });
+
   if (error || !sessionData.session?.access_token) {
     throw new Error(error?.message ?? "ログインに失敗しました");
   }
@@ -45,7 +49,11 @@ export async function logout() {
 
 const RoleSchema = z.enum(["admin", "user"]);
 
-export async function createManagedUser(input: { email: string; password: string; role: "admin" | "user" }) {
+export async function createManagedUser(input: {
+  email: string;
+  password: string;
+  role: "admin" | "user";
+}) {
   await requireAdmin();
 
   const data = z
@@ -56,12 +64,15 @@ export async function createManagedUser(input: { email: string; password: string
     })
     .parse(input);
 
-  const { data: created, error } = await supabaseServer.auth.admin.createUser({
+  const { data: created, error } = await supabaseAdmin.auth.admin.createUser({
     email: data.email,
     password: data.password,
     email_confirm: true,
   });
-  if (error || !created.user) throw new Error(error?.message ?? "ユーザー作成に失敗しました");
+
+  if (error || !created.user) {
+    throw new Error(error?.message ?? "ユーザー作成に失敗しました");
+  }
 
   const { error: profileError } = await supabaseServer.from("user_profiles").upsert({
     id: created.user.id,
@@ -74,10 +85,16 @@ export async function createManagedUser(input: { email: string; password: string
   return { ok: true };
 }
 
-export async function updateUserRole(input: { userId: string; role: "admin" | "user" }) {
+export async function updateUserRole(input: {
+  userId: string;
+  role: "admin" | "user";
+}) {
   await requireAdmin();
 
-  const data = z.object({ userId: z.string().uuid(), role: RoleSchema }).parse(input);
+  const data = z.object({
+    userId: z.string().uuid(),
+    role: RoleSchema,
+  }).parse(input);
 
   const { error } = await supabaseServer.from("user_profiles").upsert({
     id: data.userId,
@@ -85,6 +102,7 @@ export async function updateUserRole(input: { userId: string; role: "admin" | "u
   });
 
   if (error) throw new Error(error.message);
+
   revalidatePath("/admin/users");
   return { ok: true };
 }
@@ -97,7 +115,7 @@ export async function deleteManagedUser(input: { userId: string }) {
     throw new Error("自分自身は削除できません");
   }
 
-  const { error } = await supabaseServer.auth.admin.deleteUser(data.userId);
+  const { error } = await supabaseAdmin.auth.admin.deleteUser(data.userId);
   if (error) throw new Error(error.message);
 
   await supabaseServer.from("user_profiles").delete().eq("id", data.userId);

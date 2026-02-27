@@ -10,7 +10,7 @@ export type CurrentUser = {
   role: AppRole;
 };
 
-const ACCESS_TOKEN_COOKIE = "lm_access_token";
+export const ACCESS_TOKEN_COOKIE = "lm_access_token";
 
 export async function getAccessToken() {
   const store = await cookies();
@@ -24,26 +24,33 @@ export async function getCurrentUser(): Promise<CurrentUser | null> {
 
     const {
       data: { user },
-      error,
+      error: userError,
     } = await supabaseServer.auth.getUser(accessToken);
 
-    if (error || !user?.id || !user.email) return null;
+    if (userError || !user?.id || !user.email) {
+      return null;
+    }
 
-    const { data: profile } = await supabaseServer
+    const { data: profile, error: profileError } = await supabaseServer
       .from("user_profiles")
       .select("role")
       .eq("id", user.id)
       .maybeSingle();
 
-    const role = profile?.role === "admin" ? "admin" : "user";
+    if (profileError) {
+      console.error("getCurrentUser profile error:", profileError.message);
+      return null;
+    }
+
+    const role: AppRole = profile?.role === "admin" ? "admin" : "user";
 
     return {
       id: user.id,
       email: user.email,
       role,
     };
-  } catch {
-    // Supabase 接続不良や想定外エラー時は未ログイン扱いにして安全側に倒す
+  } catch (error: any) {
+    console.error("getCurrentUser failed:", error?.message, error?.cause);
     return null;
   }
 }
@@ -59,5 +66,3 @@ export async function requireAdmin() {
   if (user.role !== "admin") redirect("/");
   return user;
 }
-
-export { ACCESS_TOKEN_COOKIE };
