@@ -4,68 +4,44 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { logout } from "@/app/actions/auth";
 
-export default function SideNav({ isAdmin, email }: { isAdmin: boolean; email: string }) {
+type NavItem = { href: string; label: string; icon: string };
+
+export default function SideNav({ isAdmin }: { isAdmin: boolean; email: string }) {
   const pathname = usePathname();
   const router = useRouter();
 
-  const groups = [
-    {
-      title: "メイン",
-      items: [
-        ["/", "ダッシュボード"],
-        ["/equipment", "備品管理"],
-        ["/stocks", "在庫一覧"],
-        ["/monthly", "月次費用振替"],
-        ["/uniforms", "制服管理"],
-      ],
-    },
-    {
-      title: "入出庫",
-      items: [
-        ["/movements/receive", "入庫入力"],
-        ["/movements/issue", "出庫入力"],
-        ["/movements/transfer", "拠点振替"],
-      ],
-    },
-    {
-      title: "マスタ",
-      items: [
-        ["/master/items", "品目マスタ"],
-        ["/master/categories", "カテゴリマスタ"],
-        ["/master/variants", "サイズ管理"],
-        ["/master/branches", "拠点マスタ"],
-        ["/master/people", "貸与先マスタ"],
-      ],
-    },
-    ...(isAdmin
-      ? [
-          {
-            title: "管理",
-            items: [["/admin/users", "ユーザー管理"]],
-          },
-        ]
-      : []),
-  ] as const;
+  const items: NavItem[] = [
+    { href: "/", label: "メニュー", icon: "☷" },
+    { href: "/equipment", label: "備品一覧", icon: "≣" },
+    { href: "/movements/receive", label: "入出庫管理", icon: "▣" },
+    { href: "/stocks", label: "在庫一覧", icon: "ⓘ" },
+    { href: "/monthly", label: "月次費用", icon: "⌗" },
+    ...(isAdmin ? [{ href: "/admin/users", label: "ユーザー管理", icon: "⚙" }] : []),
+  ];
+
+  const isActive = (href: string) => pathname === href || (href === "/movements/receive" && pathname.startsWith("/movements"));
 
   return (
-    <aside className="sidebar">
-      <div className="brand">在庫・制服管理</div>
-      <div className="muted" style={{ marginBottom: 12 }}>{email}</div>
-      {groups.map((g) => (
-        <div className="nav-group" key={g.title}>
-          <div className="nav-title">{g.title}</div>
-          {g.items.map(([href, label]) => (
-            <Link key={href} href={href} className={`nav-link ${pathname === href ? "active" : ""}`}>
-              {label}
-            </Link>
-          ))}
-        </div>
-      ))}
-      <button onClick={async () => {
-        await logout();
-        router.push("/login");
-        router.refresh();
-      }}>ログアウト</button>
+    <aside className="icon-rail">
+      <div className="rail-top">◫</div>
+      <nav className="rail-nav">
+        {items.map((item) => (
+          <Link key={item.href} href={item.href} className={`rail-link ${isActive(item.href) ? "active" : ""}`} title={item.label}>
+            <span>{item.icon}</span>
+          </Link>
+        ))}
+      </nav>
+      <button
+        className="rail-logout"
+        title="ログアウト"
+        onClick={async () => {
+          await logout();
+          router.push("/login");
+          router.refresh();
+        }}
+      >
+        ⎋
+      </button>
     </aside>
   );
 }
