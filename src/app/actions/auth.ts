@@ -1,6 +1,6 @@
 "use server";
 
-import { cookies } from "next/headers";
+import { cookies, headers } from "next/headers";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { ACCESS_TOKEN_COOKIE, requireAdmin, requireUser } from "@/lib/auth";
@@ -20,9 +20,11 @@ export async function login(input: { email: string; password: string }) {
   }
 
   const store = await cookies();
+  const requestHeaders = await headers();
+  const isHttps = requestHeaders.get("x-forwarded-proto") === "https";
   store.set(ACCESS_TOKEN_COOKIE, sessionData.session.access_token, {
     httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
+    secure: isHttps,
     sameSite: "lax",
     path: "/",
     maxAge: sessionData.session.expires_in,
