@@ -19,7 +19,7 @@ export default async function Home() {
   
   return (
     <div className="grid">
-      <h1 className="page-title">ダッシュボード</h1>
+      <h1 className="page-title">備品管理ダッシュボード</h1>
       <div className="grid grid-3">
         <div className="card"><div className="muted">在庫数量合計</div><div className="kpi">{stockQty.toLocaleString()}</div></div>
         <div className="card"><div className="muted">在庫金額（FIFOロット残）</div><div className="kpi">¥{stockAmount.toLocaleString()}</div></div>
@@ -32,6 +32,7 @@ export default async function Home() {
           <div className="row">
             <Link href="/movements/receive"><button>入庫入力</button></Link>
             <Link href="/movements/issue"><button>出庫入力</button></Link>
+            <Link href="/equipment"><button>備品管理</button></Link>
           </div>
         </div>
         <table>

@@ -13,6 +13,7 @@ export default function SideNav({ isAdmin, email }: { isAdmin: boolean; email: s
       title: "メイン",
       items: [
         ["/", "ダッシュボード"],
+        ["/equipment", "備品管理"],
         ["/stocks", "在庫一覧"],
         ["/monthly", "月次費用振替"],
         ["/uniforms", "制服管理"],
