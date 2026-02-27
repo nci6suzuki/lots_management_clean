@@ -21,10 +21,14 @@ export async function login(input: { email: string; password: string }) {
 
   const store = await cookies();
   const requestHeaders = await headers();
-  const isHttps = requestHeaders.get("x-forwarded-proto") === "https";
+  const forwardedProto = requestHeaders.get("x-forwarded-proto")?.split(",")[0]?.trim();
+  const origin = requestHeaders.get("origin");
+  const originIsHttps = origin?.startsWith("https://") ?? false;
+  const secure = forwardedProto ? forwardedProto === "https" : originIsHttps;
+
   store.set(ACCESS_TOKEN_COOKIE, sessionData.session.access_token, {
     httpOnly: true,
-    secure: isHttps,
+    secure,
     sameSite: "lax",
     path: "/",
     maxAge: sessionData.session.expires_in,
