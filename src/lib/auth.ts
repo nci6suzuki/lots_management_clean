@@ -18,33 +18,17 @@ export async function getAccessToken() {
   return store.get(ACCESS_TOKEN_COOKIE)?.value ?? null;
 }
 
-export async function getRefreshToken() {
-  const store = await cookies();
-  return store.get(REFRESH_TOKEN_COOKIE)?.value ?? null;
-}
 
 export async function getCurrentUser(): Promise<CurrentUser | null> {
   try {
     const accessToken = await getAccessToken();
-    const refreshToken = await getRefreshToken();
+    if (!accessToken) return null;
 
-    if (!accessToken && !refreshToken) return null;
-
-    if (accessToken && refreshToken) {
-      const { error: setSessionError } = await supabaseServer.auth.setSession({
-        access_token: accessToken,
-        refresh_token: refreshToken,
-      });
-
-      if (setSessionError) {
-        console.error("getCurrentUser setSession error:", setSessionError.message);
-      }
-    }
 
     const {
       data: { user },
       error: userError,
-    } = await supabaseServer.auth.getUser();
+    } = await supabaseServer.auth.getUser(accessToken);
 
     if (userError || !user?.id || !user.email) {
       return null;
