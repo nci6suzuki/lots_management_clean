@@ -1,6 +1,6 @@
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
-import { supabaseServer } from "@/lib/supabase/server";
+import { supabaseAdmin, supabaseServer } from "@/lib/supabase/server";
 
 export type AppRole = "admin" | "user";
 
@@ -34,7 +34,7 @@ export async function getCurrentUser(): Promise<CurrentUser | null> {
       return null;
     }
 
-    const { data: profile, error: profileError } = await supabaseServer
+    const { data: profile, error: profileError } = await supabaseAdmin
       .from("user_profiles")
       .select("role")
       .eq("id", user.id)
