@@ -64,7 +64,7 @@ a { color: inherit; text-decoration: none; }
   gap: 8px;
   padding: 8px 0;
 }
-.rail-top { font-size: 20px; color: #5f6368; margin-bottom: 10px; }
+.rail-top { color: #5f6368; margin-bottom: 10px; }
 .rail-nav { display: flex; flex-direction: column; align-items: center; gap: 6px; width: 100%; }
 .rail-link {
   width: 36px;
@@ -73,10 +73,11 @@ a { color: inherit; text-decoration: none; }
   display: grid;
   place-items: center;
   color: #5f6368;
-  font-size: 20px;
 }
 .rail-link.active { background: #dbe7f8; color: #2e6fc9; }
 .rail-logout { margin-top: auto; width: 32px; height: 32px; border-radius: 999px; background: #fff; color: #666; border: 1px solid #c4c8cf; }
+.rail-icon { width: 20px; height: 20px; display: block; }
+.rail-logo { width: 18px; height: 18px; fill: currentColor; }
 
 .main { padding: 12px; }
 .appsheet-content { overflow: auto; }
